@@ -1,0 +1,4 @@
+"esse" é um arquivo de (texto)
+que contem
+informações
+texto
