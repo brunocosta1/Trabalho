@@ -98,9 +98,9 @@ struct Lista *Insere(struct Lista *l, char *p, int linha){
 
         struct Lista *aux = BuscaPalavra(l, p);
 
+        aux->palavra.linhas[aux->palavra.qtdOcorrencias] = linha;
         aux->palavra.qtdOcorrencias++;
-        aux->palavra.linhas = realloc(aux->palavra.linhas, aux->palavra.qtdOcorrencias - 1);
-        aux->palavra.linhas[aux->palavra.qtdOcorrencias - 1] = linha;
+        aux->palavra.linhas = (int*)realloc(aux->palavra.linhas, aux->palavra.qtdOcorrencias);
 
         return l;
 
@@ -120,6 +120,7 @@ struct Lista *DestroiLista(struct Lista *l){
     }
 
     return NULL;
+
 }
 
 
@@ -135,7 +136,7 @@ void EscreverPalavra(FILE *arq, struct Palavra p){
 
 void escrever(struct Lista *l, int qtd){
 
-    FILE *arq = fopen("indice.dat", "wb");
+    FILE *arq = fopen("indice.bin", "wb");
 
     fwrite(&qtd, sizeof(int), 1, arq);
 
@@ -143,6 +144,8 @@ void escrever(struct Lista *l, int qtd){
         EscreverPalavra(arq, l->palavra);
         l = l->prox;
     }
+    fclose(arq);
+
 }
 
 void criarIndice(){
@@ -171,12 +174,58 @@ void criarIndice(){
         num_linhas++;
     }
 
+    struct Lista *aux = lista;
+
+    while(aux != NULL){
+
+        printf("%s %d\n", aux->palavra.letras, aux->palavra.linhas[0]);
+        aux = aux->prox;
+    }
+
     escrever(lista, num_palavras);
+
+}
+void ler(){
+
+
+    FILE *arq = fopen("indice.bin", "rb");
+
+    int qtd = 0;
+    fread(&qtd, sizeof(int), 1, arq);
+    /*printf("%d\n", qtd);*/
+
+    for(int i = 0; i < qtd; i++){
+        int j = 0;
+        struct Palavra aux;
+
+        fread(&j, sizeof(int), 1, arq);
+        printf("numero de letras: %d\n", j);
+        fread(aux.letras, sizeof(char), j, arq);
+        printf("conteudo: %s\n", aux.letras);
+        fread(&aux.qtdOcorrencias, sizeof(int), 1, arq);
+        printf("numero de ocorrencias: %d\n", aux.qtdOcorrencias);
+        aux.linhas = (int*)malloc(aux.qtdOcorrencias * sizeof(int));
+        fread(aux.linhas, sizeof(int), aux.qtdOcorrencias, arq);
+        printf("primeira linha: %d\n\n", aux.linhas[0]);
+        free(aux.linhas);
+    }
+
+    fclose(arq);
 
 }
 
 
+void lerIndice(){
+
+
+
+
+}
+
 int main(){
+    /*criarIndice();*/
+    
     criarIndice();
+    ler();
     return 0;
 }
