@@ -145,13 +145,19 @@ void escrever(struct Lista *l, int qtd){
         l = l->prox;
     }
     fclose(arq);
-
 }
 
 void criarIndice(){
 
+    char nome_arquivo[20];
+    printf("Digite o nome do arquivo texto:\n");
+    scanf("%s", nome_arquivo);
 
-    FILE *arq = fopen("exemplo.txt", "r");
+
+
+
+
+    FILE *arq = fopen(nome_arquivo, "r");
     char buffer[1024];
     char *palavra;
     char *delimitadores = " \",.;:[]{}()|-\n";
@@ -183,49 +189,115 @@ void criarIndice(){
     }
 
     escrever(lista, num_palavras);
-
+    DestroiLista(lista);
+    fclose(arq);
 }
-void ler(){
 
+struct Lista *lerPalavras(FILE *arq, struct Lista *l, int qtd_palavras){
 
-    FILE *arq = fopen("indice.bin", "rb");
+    printf("Quantidade de palavras no arquivo: %d\n", qtd_palavras); 
+
+    while(qtd_palavras != 0){
+        int n_caracteres = 0;
+        struct Palavra palavra;
+
+        fread(&n_caracteres, sizeof(int), 1, arq);
+        printf("Numero de letras: %d\n", n_caracteres);
+
+        fread(palavra.letras, sizeof(char), n_caracteres, arq);
+        printf("Conteudo: %s\n", palavra.letras);
+        
+        fread(&palavra.qtdOcorrencias, sizeof(int), 1, arq);
+        printf("Numero de ocorrencias: %d\n", palavra.qtdOcorrencias);
+
+        palavra.linhas = (int *)malloc(palavra.qtdOcorrencias * sizeof(int));
+        fread(palavra.linhas, sizeof(int), palavra.qtdOcorrencias, arq);
+        printf("Linhas: ");
+
+        for (int i = 0; i < palavra.qtdOcorrencias; i++){
+            printf("[%d] ", palavra.linhas[i]);
+            l = Insere(l, palavra.letras, palavra.linhas[i]);
+        }
+        printf("\n");
+
+        free(palavra.linhas);
+        qtd_palavras -= palavra.qtdOcorrencias; // Podemos fazer a interação com qtd_palavras porque o valor original não vai se alterar fora do escopo da função.
+    }
+
+    return l;
+}
+
+struct Lista *criaLista(FILE *arq){
+
+    struct Lista *lista = NULL;
 
     int qtd = 0;
     fread(&qtd, sizeof(int), 1, arq);
-    /*printf("%d\n", qtd);*/
+    lista = lerPalavras(arq, lista, qtd); // Mesmo após o primeiro fread o arquivo é passado para outra função com o cursor na posição atual.
 
-    for(int i = 0; i < qtd; i++){
-        int j = 0;
-        struct Palavra aux;
 
-        fread(&j, sizeof(int), 1, arq);
-        printf("numero de letras: %d\n", j);
-        fread(aux.letras, sizeof(char), j, arq);
-        printf("conteudo: %s\n", aux.letras);
-        fread(&aux.qtdOcorrencias, sizeof(int), 1, arq);
-        printf("numero de ocorrencias: %d\n", aux.qtdOcorrencias);
-        aux.linhas = (int*)malloc(aux.qtdOcorrencias * sizeof(int));
-        fread(aux.linhas, sizeof(int), aux.qtdOcorrencias, arq);
-        printf("primeira linha: %d\n\n", aux.linhas[0]);
-        free(aux.linhas);
-    }
-
-    fclose(arq);
-
+    return lista;
 }
-
 
 void lerIndice(){
 
 
+    FILE *arq = fopen("indice.bin", "rb");
+    char palavra[50];
+    struct Lista *lista = criaLista(arq), *aux = NULL;
+    
 
+    printf("Digite a palavra que deseja buscar:\n");
+    scanf("%s", palavra);
+
+    aux = BuscaPalavra(lista, palavra);
+
+    if(aux == NULL){
+        printf("Palavra não encontrada.");
+    }else{
+        printf("Quantidade de vezes que a palavra aparece: %d\n", aux->palavra.qtdOcorrencias);
+        printf("Linhas: ");
+        for(int i = 0; i < aux->palavra.qtdOcorrencias; i++)
+            printf("%d ", aux->palavra.linhas[i]);
+        printf("\n");
+    }
+
+    DestroiLista(lista);
+    fclose(arq);
+
+}
+
+void menu(){
+
+    int opcao = 0;
+
+    while(opcao != 3){
+
+        printf("[1] - Criar índice\n");
+        printf("[2] - Utilizar índice\n");
+        printf("[3] - Sair\n");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            
+            case 1:
+                criarIndice();
+                break;
+
+            case 2:
+                lerIndice();
+                break;
+
+            default:
+                break;
+        }
+
+    }
 
 }
 
 int main(){
-    /*criarIndice();*/
     
-    criarIndice();
-    ler();
+    menu();
     return 0;
 }
