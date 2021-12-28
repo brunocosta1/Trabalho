@@ -8,9 +8,42 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+struct Ocorrencia{
+
+    int arquivo;
+    int qtdOcorrencias;
+    int *linhas;
+    struct Ocorrencia *prox;
+
+};
+
+struct Arquivo{
+
+    char nomeArquivo[50];
+    struct Arquivo *prox;
+
+};
+
+struct Indice{
+
+
+    int qtdArquivos;
+    struct Arquivo *arquivos;
+
+    int qtdPalavras;
+    struct Palavra *palavras;
+
+
+};
+
 struct Palavra{
     char letras[50]; // Caracteres que formam a palavra.
     int qtdOcorrencias; // Quantidade de ocorrências no arquivo.
+
+    /*struct Ocorrencia *ocorrencias;*/
+    /*struct Palavra *prox;*/
+
     int *linhas; // Vetor dinâmico.
 };
 
@@ -162,7 +195,7 @@ void criarIndice(){
     char buffer[1024];
     char *palavra;
     char *delimitadores = " \",.;:[]{}()|-\n";
-    int num_linhas, num_palavras = 0;
+    int num_linhas = 0, num_palavras = 0;
 
     if(arq != NULL){
 
@@ -299,16 +332,57 @@ void lerIndice(){
 
 }
 
+int ExisteArquivo(struct Arquivo *arquivos, char nomeArquivo[50]){
+
+    struct Arquivo *aux = arquivos;
+
+    while(aux != NULL){
+
+        if(strcmp(aux->nomeArquivo, nomeArquivo) == 0)
+            return 1;
+        aux = aux->prox;
+
+    }
+
+    return 0;
+
+}
+
+void processaArquivo(struct Arquivo *arquivos){
+
+    char nomeArquivo[50];
+
+    printf("Digite o nome do arquivo:\n");
+    scanf("%s", nomeArquivo);
+
+    if (!ExisteArquivo(arquivos, nomeArquivo)){
+        //InsereArquivo(arquivos, nomeArquivo); Insere no final
+        FILE *arq = fopen(nomeArquivo, "r");
+
+        //Insere
+
+
+    }else {
+        printf("Arquivo já foi processado.\n");
+    }
+
+}
+
+
 // Função do menu principal.
 void menu(){
 
     int opcao = 0;
 
-    while(opcao != 3){
+    struct Arquivo *arquivos = NULL;
 
-        printf("[1] - Criar índice\n");
-        printf("[2] - Utilizar índice\n");
-        printf("[3] - Sair\n");
+    while(opcao != 5){
+
+        printf("[1] - Processar novo arquivo de texto\n");
+        printf("[2] - Salvar índice atual\n");
+        printf("[3] - Ler um arquivo de índice\n");
+        printf("[4] - Mostrar as informações de um índice\n");
+        printf("[5] - Sair\n");
         scanf("%d", &opcao);
 
         switch (opcao) {
@@ -319,6 +393,12 @@ void menu(){
 
             case 2:
                 lerIndice();
+                break;
+            
+            case 3:
+                break;
+
+            case 4:
                 break;
 
             default:
