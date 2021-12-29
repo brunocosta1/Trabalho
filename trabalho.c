@@ -14,6 +14,7 @@ struct Ocorrencia{
     int arquivo;
     int qtdOcorrencias;
     int *linhas;
+
     struct Ocorrencia *prox;
 
 };
@@ -24,6 +25,25 @@ struct Arquivo{
     struct Arquivo *prox;
 
 };
+
+struct Arquivo *InsereArquivo(struct Arquivo *l, char nomeArquivo[50]){
+
+    struct Arquivo *aux = l;
+
+    struct Arquivo *novo = malloc(sizeof(struct Arquivo));
+    strcpy(novo->nomeArquivo, nomeArquivo);
+    novo->prox = NULL;
+
+    if(aux != NULL){
+        while(aux->prox != NULL)
+            aux = aux->prox;
+
+        aux->prox = novo;
+        return l;
+    }else
+        return novo;
+
+}
 
 struct Indice{
 
@@ -41,10 +61,11 @@ struct Palavra{
     char letras[50]; // Caracteres que formam a palavra.
     int qtdOcorrencias; // Quantidade de ocorrências no arquivo.
 
-    /*struct Ocorrencia *ocorrencias;*/
-    /*struct Palavra *prox;*/
+    struct Ocorrencia *ocorrencias;
+    struct Palavra *prox;
 
-    int *linhas; // Vetor dinâmico.
+    int *linhas; //Apagar depois
+
 };
 
 struct Lista{
@@ -183,45 +204,6 @@ void escreveLista(struct Lista *l, int qtd) {
 
 }
 
-// Função principal que cria um indice para um arquivo de texto.
-void criarIndice(){
-
-    char nome_arquivo[20];
-    printf("Digite o nome do arquivo texto:\n");
-    scanf("%s", nome_arquivo);
-
-    FILE *arq = fopen(nome_arquivo, "r");
-
-    char buffer[1024];
-    char *palavra;
-    char *delimitadores = " \",.;:[]{}()|-\n";
-    int num_linhas = 0, num_palavras = 0;
-
-    if(arq != NULL){
-
-        struct Lista *lista = NULL;
-
-        while(fgets(buffer, sizeof(buffer), arq) != NULL){
-            palavra = strtok(buffer, delimitadores);
-
-            while(palavra != NULL){
-
-                lista = Insere(lista, palavra, num_linhas);
-
-                num_palavras++;
-                palavra = strtok(NULL, delimitadores);
-            }
-            num_linhas++;
-        }
-
-        escreveLista(lista, num_palavras);
-        DestroiLista(lista);
-        fclose(arq);
-    }else{
-        printf("Arquivo não aberto.\n");
-    }
-
-}
 
 // Função auxiliar que mostra as linhas em que a palavra aparece.
 void mostraLinhas(struct Lista *cont){
@@ -348,23 +330,230 @@ int ExisteArquivo(struct Arquivo *arquivos, char nomeArquivo[50]){
 
 }
 
-void processaArquivo(struct Arquivo *arquivos){
+// Função principal que cria um indice para um arquivo de texto.
+void criarIndice(){
+
+    char nome_arquivo[20];
+    printf("Digite o nome do arquivo texto:\n");
+    scanf("%s", nome_arquivo);
+
+    FILE *arq = fopen(nome_arquivo, "r");
+
+    char buffer[1024];
+    char *palavra;
+    char *delimitadores = " \",.;:[]{}()|-\n";
+    int num_linhas = 0, num_palavras = 0;
+
+    if(arq != NULL){
+
+        struct Lista *lista = NULL;
+
+        while(fgets(buffer, sizeof(buffer), arq) != NULL){
+            palavra = strtok(buffer, delimitadores);
+
+            while(palavra != NULL){
+
+                lista = Insere(lista, palavra, num_linhas);
+
+                num_palavras++;
+                palavra = strtok(NULL, delimitadores);
+            }
+            num_linhas++;
+        }
+
+        escreveLista(lista, num_palavras);
+        DestroiLista(lista);
+        fclose(arq);
+    }else{
+        printf("Arquivo não aberto.\n");
+    }
+
+}
+
+int ExistePalavra(char *palavra, struct Indice *indice){
+
+    struct Palavra *aux = indice->palavras;
+
+    while(aux != NULL){
+
+        if(strcmp(aux->letras, palavra) == 0)
+            return 1;
+
+        aux = aux->prox;
+    }
+
+    return 0;
+
+}
+
+int existeIdArquivo(struct Palavra *palavra, int idArquivo){
+
+    struct Ocorrencia *aux = palavra->ocorrencias;
+
+    while(aux != NULL)
+        if(aux->arquivo == idArquivo)
+            return 1;
+
+    return 0;
+
+}
+
+struct Palavra *BuscaPalavra2(char *palavra, struct Palavra *lista){
+
+    struct Palavra *aux = lista;
+    while(aux != NULL && strcmp(aux->letras, palavra) != 0)
+        aux = aux->prox;
+
+    return aux;
+
+}
+
+struct Ocorrencia *BuscaOcorrencia(struct Palavra *palavra){
+
+    struct Ocorrencia *aux = palavra->ocorrencias;
+
+    while(aux->prox != NULL)
+        aux = aux->prox;
+
+    return aux;
+
+}
+
+struct Palavra *InserePalavra(char *palavra, struct Indice *indice, int linha, int idArquivo){
+
+    if(!ExistePalavra(palavra, indice)){
+
+      indice->qtdPalavras++;  
+
+      //Criar nova palavra   
+
+      struct Palavra *novaPalavra = malloc(sizeof(struct Palavra));
+      strcpy(novaPalavra->letras, palavra);
+      novaPalavra->qtdOcorrencias = 1; //Quantidade em arquivos
+      novaPalavra->prox = NULL;
+
+      //Criar nova ocorrência
+
+      struct Ocorrencia *novaOcorrencia = malloc(sizeof(struct Ocorrencia));
+      novaOcorrencia->arquivo = idArquivo;
+      novaOcorrencia->qtdOcorrencias = 1;
+      novaOcorrencia->linhas = calloc(0, sizeof(int));
+      novaOcorrencia->linhas[0] = linha;
+      novaOcorrencia->prox = NULL;
+
+
+      novaPalavra->ocorrencias = novaOcorrencia;
+
+        if(indice->palavras == NULL){
+            return novaPalavra;
+        }else if(strcmp(palavra, indice->palavras->letras) < 0){
+
+            novaPalavra->prox = indice->palavras;
+            return novaPalavra;
+        }else{
+
+            struct Palavra *aux = indice->palavras;
+
+            while(aux->prox && strcmp(palavra, aux->prox->letras) > 0)
+                aux = aux->prox;
+
+            novaPalavra->prox = aux->prox;
+            aux->prox = novaPalavra;
+
+            return indice->palavras;
+        }
+    }else{
+
+        struct Palavra *palavraExistente = BuscaPalavra2(palavra, indice->palavras);
+
+        if(existeIdArquivo(palavraExistente, idArquivo)){
+            struct Ocorrencia *aux = BuscaOcorrencia(palavraExistente);
+            aux->qtdOcorrencias++;
+            aux->linhas = (int*)realloc(aux->linhas, aux->qtdOcorrencias - 1);
+            aux->linhas[aux->qtdOcorrencias - 1] = linha;
+
+            return indice->palavras;
+
+        }else{
+
+            struct Ocorrencia *novaOcorrencia = malloc(sizeof(struct Ocorrencia));
+            novaOcorrencia->arquivo = idArquivo;
+            novaOcorrencia->qtdOcorrencias = 1;
+            novaOcorrencia->linhas = calloc(0, sizeof(int));
+            novaOcorrencia->linhas[0] = linha;
+            novaOcorrencia->prox = NULL;
+
+            struct Ocorrencia *aux = BuscaOcorrencia(palavraExistente);
+            aux->prox = novaOcorrencia;
+
+            return indice->palavras;
+        }
+    }
+}
+
+
+struct Indice *processaArquivo(struct Indice *indice, int idArquivo){
 
     char nomeArquivo[50];
 
     printf("Digite o nome do arquivo:\n");
     scanf("%s", nomeArquivo);
 
-    if (!ExisteArquivo(arquivos, nomeArquivo)){
-        //InsereArquivo(arquivos, nomeArquivo); Insere no final
+    if (!ExisteArquivo(indice->arquivos, nomeArquivo)){
         FILE *arq = fopen(nomeArquivo, "r");
 
-        //Insere
+        if(arq){
+            indice->qtdArquivos++;
+            indice->arquivos = InsereArquivo(indice->arquivos, nomeArquivo); //Insere no final
+
+            char buffer[1024];
+            char *palavra;
+            char *delimitadores = " \",.;:[]{}()|-\n";
+            int num_linhas = 0, num_palavras = 0;
+
+            while(fgets(buffer, sizeof(buffer), arq) != NULL){
+
+                palavra = strtok(buffer, delimitadores);
+
+                while(palavra != NULL){
+
+                    // indice->palavra = InserePalavra(palavra, indice, num_linhas, idArquivo);
+
+                    num_palavras++;
+                    palavra = strtok(NULL, delimitadores);
+
+                }
+                num_linhas++;
+            }
+
+
+
+            fclose(arq);
+        }else{
+
+            printf("Erro ao abrir o arquivo.\n");
+
+        }
+
+
+        //LePalavras(indice->palavras, arq);
+
+
+
+
 
 
     }else {
         printf("Arquivo já foi processado.\n");
     }
+
+    /*struct Arquivo *aux = indice->arquivos;*/
+    /*while(aux != NULL){*/
+        /*printf("%s\n", aux->nomeArquivo);*/
+        /*aux = aux->prox;*/
+    /*}*/
+
+    return indice;
 
 }
 
@@ -374,7 +563,13 @@ void menu(){
 
     int opcao = 0;
 
-    struct Arquivo *arquivos = NULL;
+    struct Indice *indice = malloc(sizeof(struct Indice));
+    indice->qtdArquivos = 0;
+    indice->qtdPalavras = 0;
+    indice->arquivos = NULL;
+    indice->palavras = NULL;
+
+    int arquivosProcessados = 0;
 
     while(opcao != 5){
 
@@ -388,8 +583,10 @@ void menu(){
         switch (opcao) {
             
             case 1:
-                criarIndice();
-                break;
+              arquivosProcessados++;  
+              processaArquivo(indice, arquivosProcessados);
+              printf("%s\n", indice->palavras->letras);
+              break;
 
             case 2:
                 lerIndice();
