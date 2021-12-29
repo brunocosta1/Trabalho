@@ -502,7 +502,7 @@ struct Indice *processaArquivo(struct Indice *indice, int idArquivo){
     if (!ExisteArquivo(indice->arquivos, nomeArquivo)){
         FILE *arq = fopen(nomeArquivo, "r");
 
-        if(arq){
+        if(arq != NULL){
             indice->qtdArquivos++;
             indice->arquivos = InsereArquivo(indice->arquivos, nomeArquivo); //Insere no final
 
@@ -517,7 +517,7 @@ struct Indice *processaArquivo(struct Indice *indice, int idArquivo){
 
                 while(palavra != NULL){
 
-                    // indice->palavra = InserePalavra(palavra, indice, num_linhas, idArquivo);
+                    indice->palavras = InserePalavra(palavra, indice, num_linhas, idArquivo);
 
                     num_palavras++;
                     palavra = strtok(NULL, delimitadores);
@@ -526,23 +526,10 @@ struct Indice *processaArquivo(struct Indice *indice, int idArquivo){
                 num_linhas++;
             }
 
-
-
             fclose(arq);
         }else{
-
             printf("Erro ao abrir o arquivo.\n");
-
         }
-
-
-        //LePalavras(indice->palavras, arq);
-
-
-
-
-
-
     }else {
         printf("Arquivo já foi processado.\n");
     }
@@ -556,6 +543,53 @@ struct Indice *processaArquivo(struct Indice *indice, int idArquivo){
     return indice;
 
 }
+
+void show(struct Indice *i){
+
+    struct Palavra *aux = i->palavras;
+    struct Ocorrencia *tmp = i->palavras->ocorrencias;
+
+    printf("\nArquivos: %d | Palavras: %d\n", i->qtdArquivos, i->qtdPalavras); 
+
+    for(struct Palavra *aux = i->palavras; aux != NULL; aux = aux->prox){
+        for(struct Ocorrencia *tmp = aux->ocorrencias; tmp != NULL; tmp = tmp->prox)
+            printf("\nPalavra: %s | Ocorrencias: %d | ID Arquivo: %d\n", aux->letras, tmp->qtdOcorrencias, tmp->arquivo); 
+    }
+    printf("\n");
+}
+
+void salvarIndice(struct Indice *indice){
+
+    FILE *arq = fopen("indice.dat", "wb");
+
+    if(arq != NULL){
+
+        fwrite(&indice->qtdArquivos, sizeof(int), 1, arq);
+
+        struct Arquivo *aux = indice->arquivos;
+
+        while(aux != NULL){
+            int qtd = strlen(aux->nomeArquivo) + 1;
+            fwrite(&qtd, sizeof(int), 1, arq); 
+            fwrite(aux->nomeArquivo, sizeof(char), qtd, arq);
+            aux = aux->prox;
+        }
+
+        fwrite(&indice->qtdPalavras, sizeof(int), 1, arq);
+
+        for(struct Palavra *aux = indice->palavras; aux != NULL; aux = aux->prox){
+
+        }
+
+
+
+
+
+    }
+
+
+}
+
 
 
 // Função do menu principal.
@@ -583,10 +617,9 @@ void menu(){
         switch (opcao) {
             
             case 1:
-              arquivosProcessados++;  
-              processaArquivo(indice, arquivosProcessados);
-              printf("%s\n", indice->palavras->letras);
-              break;
+                arquivosProcessados++;  
+                processaArquivo(indice, arquivosProcessados);
+                break;
 
             case 2:
                 lerIndice();
@@ -596,6 +629,7 @@ void menu(){
                 break;
 
             case 4:
+                show(indice);
                 break;
 
             default:
