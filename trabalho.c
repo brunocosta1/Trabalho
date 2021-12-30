@@ -544,19 +544,38 @@ struct Indice *processaArquivo(struct Indice *indice){
 
 }
 
-void show(struct Indice *i){
+void show(struct Indice *indice) {
 
-    struct Palavra *aux = i->palavras;
-    struct Ocorrencia *tmp = i->palavras->ocorrencias;
+    struct Arquivo *arquivo = indice->arquivos;
 
-
-    printf("\nArquivos: %d | Palavras: %d\n", i->qtdArquivos, i->qtdPalavras); 
-
-    for(struct Palavra *aux = i->palavras; aux != NULL; aux = aux->prox){
-        for(struct Ocorrencia *tmp = aux->ocorrencias; tmp != NULL; tmp = tmp->prox)
-            printf("\nPalavra: %s | Ocorrencias: %d | ID Arquivo: %d\n", aux->letras, tmp->qtdOcorrencias, tmp->arquivo); 
+    printf("Nome dos arquivos:\n");
+    for(int i = 0; i < indice->qtdArquivos; i++){
+        printf("%s ", arquivo->nomeArquivo);
     }
     printf("\n");
+
+    struct Palavra *palavra = indice->palavras;
+
+    printf("\nPalavras:\n");
+
+    while(palavra){
+
+        struct Ocorrencia *ocorrencia = palavra->ocorrencias;
+
+        printf("\n%s\n", palavra->letras);
+        while(ocorrencia != NULL){
+
+            printf("Numero do arquivo: %d | Quantidade de vezes que aparece: %d | Linhas: ", ocorrencia->arquivo, ocorrencia->qtdOcorrencias);
+            for(int i = 0 ; i < ocorrencia->qtdOcorrencias; i++)
+                printf("[%d] ", ocorrencia->linhas[i]);
+
+            ocorrencia = ocorrencia->prox;
+        }
+        printf("\n");
+        palavra = palavra->prox;
+    }
+
+
 }
 
 void salvarIndice(struct Indice *indice){
