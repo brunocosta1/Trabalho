@@ -579,6 +579,76 @@ void salvarIndice(struct Indice *indice){
 
         for(struct Palavra *aux = indice->palavras; aux != NULL; aux = aux->prox){
 
+            int qtd = strlen(aux->letras)+1;
+            fwrite(&qtd, sizeof(int), 1, arq);
+            fwrite(aux->letras, sizeof(char), qtd, arq);
+            fwrite(&aux->qtdOcorrencias, sizeof(int), 1, arq);
+
+            struct Ocorrencia *tmp = aux->ocorrencias;
+
+            for(int i = 0 ; i < aux->qtdOcorrencias; i++){
+                fwrite(&tmp->arquivo, sizeof(int), 1, arq);
+                fwrite(&tmp->qtdOcorrencias, sizeof(int), 1, arq);
+                fwrite(tmp->linhas, sizeof(int), tmp->qtdOcorrencias, arq);
+            }
+        }
+
+        fclose(arq);
+    }else{
+        printf("Erro ao abrir o arquivo para escrita\n");
+    }
+
+
+}
+
+struct Indice *DestroiIndice(struct Indice *indice){
+    return NULL;
+}
+
+struct Indice *lerIndice2(){
+
+    struct Indice *indice = malloc(sizeof(struct Indice));
+    indice->qtdArquivos = 0;
+    indice->qtdPalavras = 0;
+    indice->arquivos = NULL;
+    indice->palavras = NULL;
+
+    FILE *arq = fopen("indice.dat", "rb");
+
+    if(arq != NULL){
+
+        // Inserindo arquivos
+        fread(&indice->qtdArquivos, sizeof(int), 1, arq);
+
+        for(int i = 0; i < indice->qtdArquivos; i++){
+            int qtd_letras = 0;
+            fread(&qtd_letras, sizeof(int), 1, arq);
+            char nomeArquivo[50];
+            fread(nomeArquivo, sizeof(char), qtd_letras, arq);
+            indice->arquivos = InsereArquivo(indice->arquivos, nomeArquivo);
+        }
+
+        //Inserindo palavras
+
+        fread(&indice->qtdPalavras, sizeof(int), 1, arq);
+
+        for(int i = 0; i < indice->qtdPalavras; i++){
+
+            int qtd_letras = 0;
+            fread(&qtd_letras, sizeof(int), 1, arq);
+
+            struct Palavra *novaPalavra = malloc(sizeof(struct Palavra));
+            novaPalavra->ocorrencias = NULL;
+            novaPalavra->prox = NULL;
+            fread(novaPalavra->letras, sizeof(char), qtd_letras, arq);
+            fread(&novaPalavra->qtdOcorrencias, sizeof(int), 1, arq);
+
+
+            //Inserindo ocorrências
+            
+
+
+
         }
 
 
@@ -588,11 +658,16 @@ void salvarIndice(struct Indice *indice){
     }
 
 
+
+
+
+
+
+
 }
 
-
-
 // Função do menu principal.
+
 void menu(){
 
     int opcao = 0;
@@ -622,10 +697,12 @@ void menu(){
                 break;
 
             case 2:
-                lerIndice();
+                salvarIndice(indice);
                 break;
             
             case 3:
+                indice = DestroiIndice(indice);
+                lerIndice();
                 break;
 
             case 4:
