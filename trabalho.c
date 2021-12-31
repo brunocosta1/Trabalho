@@ -551,6 +551,7 @@ void show(struct Indice *indice) {
     printf("Nome dos arquivos:\n");
     for(int i = 0; i < indice->qtdArquivos; i++){
         printf("%s ", arquivo->nomeArquivo);
+        arquivo = arquivo->prox;
     }
     printf("\n");
 
