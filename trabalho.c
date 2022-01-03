@@ -39,6 +39,7 @@ struct Arquivo *InsereArquivo(struct Arquivo *l, char nomeArquivo[50]){
             aux = aux->prox;
 
         aux->prox = novo;
+        printf("Inserindo no final\n");
         return l;
     }else
         return novo;
@@ -64,7 +65,6 @@ struct Palavra{
     struct Ocorrencia *ocorrencias;
     struct Palavra *prox;
 
-    //int *linhas; //Apagar depois
 
 };
 
@@ -390,9 +390,11 @@ int existeIdArquivo(struct Palavra *palavra, int idArquivo){
 
     struct Ocorrencia *aux = palavra->ocorrencias;
 
-    while(aux != NULL)
+    while(aux != NULL){
         if(aux->arquivo == idArquivo)
             return 1;
+        aux = aux->prox;
+    }
 
     return 0;
 
@@ -504,6 +506,7 @@ struct Indice *processaArquivo(struct Indice *indice){
 
         if(arq != NULL){
             indice->qtdArquivos++;
+            printf("Inserindo arquivo...\n");
             indice->arquivos = InsereArquivo(indice->arquivos, nomeArquivo); //Insere no final
 
             char buffer[1024];
@@ -517,6 +520,7 @@ struct Indice *processaArquivo(struct Indice *indice){
 
                 while(palavra != NULL){
 
+                    printf("Inserindo %s...\n", palavra);
                     indice->palavras = InserePalavra(palavra, indice, num_linhas, indice->qtdArquivos);
 
                     num_palavras++;
@@ -525,6 +529,7 @@ struct Indice *processaArquivo(struct Indice *indice){
                 }
                 num_linhas++;
             }
+            printf("Fechando arquivo...\n");
 
             fclose(arq);
         }else{
@@ -540,6 +545,7 @@ struct Indice *processaArquivo(struct Indice *indice){
         /*aux = aux->prox;*/
     /*}*/
 
+    printf("Retornando indice\n");
     return indice;
 
 }
@@ -623,54 +629,51 @@ void salvarIndice(struct Indice *indice){
 
 struct Indice *DestroiIndice(struct Indice *indice){
 
-    //if(indice != NULL){
+    const int condicao = indice->qtdArquivos != 0 && indice->qtdPalavras != 0 && indice->arquivos != NULL && indice->palavras != NULL;
+
+    if(condicao){
 
 
-        //struct Palavra *aux1 = indice->palavras;
+        struct Palavra *aux1 = indice->palavras;
 
-        //while(aux1 != NULL){
+        while(aux1 != NULL){
 
-            //struct Palavra *aux4 = aux1->prox;
+            struct Palavra *aux4 = aux1->prox;
 
-            //struct Ocorrencia *aux2 = aux1->ocorrencias;
+            struct Ocorrencia *aux2 = aux1->ocorrencias;
 
-            //while(aux2 != NULL){
+            while(aux2 != NULL){
 
-                //struct Ocorrencia *aux3 = aux2->prox;
+                struct Ocorrencia *aux3 = aux2->prox;
 
-                //aux2->prox = NULL;
+                aux2->prox = NULL;
 
-                //free(aux2->linhas);
-                //free(aux2);
-                //aux2 = aux3;
-            //}
+                free(aux2->linhas);
+                free(aux2);
+                aux2 = aux3;
+            }
 
-            //aux1->prox = NULL;
-            //free(aux1);
+            aux1->prox = NULL;
+            free(aux1);
 
-            //aux1 = aux4;
+            aux1 = aux4;
 
-        //}
+        }
 
-        //}
-        //struct Arquivo *aux5 = indice->arquivos;
+        }
+        struct Arquivo *aux5 = indice->arquivos;
 
-        //while(aux5 != NULL){
+        while(aux5 != NULL){
 
-            //indice->arquivos->prox = NULL;
-            //free(indice->arquivos);
+            indice->arquivos->prox = NULL;
+            free(indice->arquivos);
 
-            //indice->arquivos = aux5;
-            //aux5 = aux5->prox;
+            indice->arquivos = aux5;
+            aux5 = aux5->prox;
 
-        //}
+        }
 
-        indice->qtdArquivos = 0;
-        indice->qtdPalavras = 0;
-        indice->arquivos = NULL;
-        indice->palavras = NULL;
-
-        return indice;
+        return NULL;
 }
 
 struct Palavra *InserePalavraAux(struct Palavra *palavra, struct Palavra *lista){
@@ -777,6 +780,7 @@ struct Indice *lerIndice2(){
         // Inserindo arquivos
         fread(&indice->qtdArquivos, sizeof(int), 1, arq);
 
+        printf("%d\n", indice->qtdArquivos);
         for(int i = 0; i < indice->qtdArquivos; i++){
             int qtd_letras = 0;
             fread(&qtd_letras, sizeof(int), 1, arq);
@@ -800,7 +804,7 @@ struct Indice *lerIndice2(){
             fread(novaPalavra->letras, sizeof(char), qtd_letras, arq);
             fread(&novaPalavra->qtdOcorrencias, sizeof(int), 1, arq);
 
-            indice->palavras = InserePalavraAux(novaPalavra, indice->palavras);
+            /*indice->palavras = InserePalavraAux(novaPalavra, indice->palavras);*/
 
             //Inserindo ocorrências
 
@@ -813,7 +817,10 @@ struct Indice *lerIndice2(){
                 novaOcorrencia->linhas = malloc(sizeof(int) * novaOcorrencia->qtdOcorrencias);
                 fread(novaOcorrencia->linhas, sizeof(int), novaOcorrencia->qtdOcorrencias, arq);
 
-                novaPalavra->ocorrencias = InsereOcorrencias(novaOcorrencia, novaPalavra->ocorrencias);
+                for(int j = 0; j < novaOcorrencia->qtdOcorrencias; j++)
+                    indice->palavras = InserePalavra(novaPalavra->letras, indice, novaOcorrencia->linhas[j], novaOcorrencia->arquivo); 
+
+                /*novaPalavra->ocorrencias = InsereOcorrencias(novaOcorrencia, novaPalavra->ocorrencias);*/
             }
 
         }
@@ -849,7 +856,7 @@ void menu(){
         switch (opcao) {
             
             case 1:
-                processaArquivo(indice);
+                indice = processaArquivo(indice);
                 break;
 
             case 2:
@@ -859,6 +866,7 @@ void menu(){
             case 3:
                 indice = DestroiIndice(indice);
                 indice = lerIndice2();
+                /*show(indice);*/
                 break;
 
             case 4:
@@ -866,6 +874,8 @@ void menu(){
                 break;
 
             default:
+                printf("Opção inválida.\n");
+                exit(1);
                 break;
         }
 
