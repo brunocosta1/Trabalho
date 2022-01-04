@@ -1,4 +1,4 @@
-"esse" é um arquivo de (texto)
+"esse" eh um arquivo de (texto)
 que contem
-informações
+informacoes
 texto
