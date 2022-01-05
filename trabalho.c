@@ -286,10 +286,10 @@ void show(struct Indice *indice) {
 
         struct Ocorrencia *ocorrencia = palavra->ocorrencias;
 
-        printf("\n%s %d\n", palavra->letras, palavra->qtdOcorrencias);
+        printf("\n%s\n", palavra->letras);
         while(ocorrencia != NULL){
 
-            printf("Numero do arquivo: %d | Quantidade de vezes que aparece: %d | Linhas: ", ocorrencia->arquivo, ocorrencia->qtdOcorrencias);
+            printf("Numero do arquivo: %d | Quantidade de vezes que aparece no arquivo: %d | Linhas: ", ocorrencia->arquivo, ocorrencia->qtdOcorrencias);
             for(int i = 0 ; i < ocorrencia->qtdOcorrencias; i++)
                 printf("[%d] ", ocorrencia->linhas[i]);
             printf("\n");
