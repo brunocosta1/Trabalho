@@ -26,7 +26,7 @@ struct Indice{
     struct Arquivo *arquivos;
 
     int qtdPalavras;
-    struct Palavra *palavras;
+    /*struct Palavra *palavras;*/
 
     struct Palavra *iniciais[26];
 };
@@ -67,8 +67,8 @@ int ExisteArquivo(struct Arquivo *arquivos, char nomeArquivo[50]){
     return 0;
 }
 
-int ExistePalavra(char *palavra, struct Indice *indice){
-    struct Palavra *aux = indice->palavras;
+int ExistePalavra(char *palavra, struct Palavra *lista){
+    struct Palavra *aux = lista;
 
     while(aux != NULL){
         if(strcmp(aux->letras, palavra) == 0)
@@ -139,8 +139,11 @@ struct Ocorrencia *criaOcorrencia(int idArquivo, int linha){
     return novaOcorrencia;
 }
 
-struct Palavra *InserePalavra(char *palavra, struct Indice *indice, int linha, int idArquivo){
-    if(!ExistePalavra(palavra, indice)){
+
+
+
+struct Palavra *InserePalavra(char *palavra, struct Indice *indice, int linha, int idArquivo, int n){
+    if(!ExistePalavra(palavra, indice->iniciais[n])){
 
       indice->qtdPalavras++;  
 
@@ -149,13 +152,13 @@ struct Palavra *InserePalavra(char *palavra, struct Indice *indice, int linha, i
 
       novaPalavra->ocorrencias = novaOcorrencia;
 
-        if(indice->palavras == NULL){
+        if(indice->iniciais[n] == NULL){
             return novaPalavra;
-        }else if(strcmp(palavra, indice->palavras->letras) < 0){
-            novaPalavra->prox = indice->palavras;
+        }else if(strcmp(palavra, indice->iniciais[n]->letras) < 0){
+            novaPalavra->prox = indice->iniciais[n];
             return novaPalavra;
         }else{
-            struct Palavra *aux = indice->palavras;
+            struct Palavra *aux = indice->iniciais[n];
 
             while(aux->prox && strcmp(palavra, aux->prox->letras) > 0)
                 aux = aux->prox;
@@ -163,10 +166,10 @@ struct Palavra *InserePalavra(char *palavra, struct Indice *indice, int linha, i
             novaPalavra->prox = aux->prox;
             aux->prox = novaPalavra;
 
-            return indice->palavras;
+            return indice->iniciais[n];
         }
     }else{
-      struct Palavra *palavraExistente = BuscaPalavra(palavra, indice->palavras);
+      struct Palavra *palavraExistente = BuscaPalavra(palavra, indice->iniciais[n]);
 
       if (existeIdArquivo(palavraExistente, idArquivo)) {
         struct Ocorrencia *aux = BuscaOcorrencia(palavraExistente, idArquivo);
@@ -175,7 +178,7 @@ struct Palavra *InserePalavra(char *palavra, struct Indice *indice, int linha, i
         aux->linhas = (int *)realloc(aux->linhas,  sizeof(int) * (aux->qtdOcorrencias - 1));
         aux->linhas[aux->qtdOcorrencias - 1] = linha;
 
-        return indice->palavras;
+        return indice->iniciais[n];
       }else{
             palavraExistente->qtdOcorrencias++;
 
@@ -184,9 +187,96 @@ struct Palavra *InserePalavra(char *palavra, struct Indice *indice, int linha, i
 
             aux->prox = novaOcorrencia;
 
-            return indice->palavras;
+            return indice->iniciais[n];
         }
     }
+}
+
+int retornaIndice(char c){
+
+
+    switch(c){
+
+        case 'a':
+            return 0;
+
+        case 'b':
+            return 1;
+
+        case 'c':
+            return 2;
+
+        case 'd':
+            return 3;
+
+        case 'e':
+            return 4;
+
+        case 'f':
+            return 5;
+
+        case 'g':
+            return 6;
+
+        case 'h':
+            return 7;
+
+        case 'i':
+            return 8;
+
+        case 'j':
+            return 9;
+
+        case 'k':
+            return 10;
+
+        case 'l':
+            return 11;
+
+        case 'm':
+            return 12;
+
+        case 'n':
+            return 13;
+
+        case 'o':
+            return 14;
+            
+        case 'p':
+            return 15;
+
+        case 'q':
+            return 16;
+
+        case 'r':
+            return 17;
+
+        case 's':
+            return 18;
+
+        case 't':
+            return 19;
+
+        case 'u':
+            return 20;
+
+        case 'v':
+            return 21;
+
+        case 'x':
+            return 22;
+
+        case 'w':
+            return 23;
+
+        case 'y':
+            return 24;
+
+        case 'z':
+            return 25;
+    }
+
+
 }
 
 
@@ -207,12 +297,14 @@ struct Indice *processaArquivo(struct Indice *indice){
             char *palavra;
             char *delimitadores = " \",.;:[]{}()|-\n";
             int num_linhas = 0, num_palavras = 0;
+            int n = 0;
 
             while(fscanf(arq, "%[^\n] ", buffer) != EOF){
                 palavra = strtok(buffer, delimitadores);
+                n = retornaIndice(palavra[0]);
 
                 while(palavra != NULL){
-                    indice->palavras = InserePalavra(palavra, indice, num_linhas, indice->qtdArquivos);
+                    indice->iniciais[n] = InserePalavra(palavra, indice, num_linhas, indice->qtdArquivos, n);
 
                     num_palavras++;
                     palavra = strtok(NULL, delimitadores);
@@ -416,7 +508,9 @@ int main(){
     indice->qtdArquivos = 0;
     indice->qtdPalavras = 0;
     indice->arquivos = NULL;
-    indice->palavras = NULL;
+    /*indice->palavras = NULL;*/
+    for(int i = 0; i < 0; i++)
+        indice->iniciais[i] = NULL;
 
     while(opcao != 5){
         printf("[1] - Processar novo arquivo de texto\n");
