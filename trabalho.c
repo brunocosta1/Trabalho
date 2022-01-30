@@ -27,6 +27,8 @@ struct Indice{
 
     int qtdPalavras;
     struct Palavra *palavras;
+
+    struct Palavra *iniciais[26];
 };
 
 struct Palavra{
@@ -420,7 +422,7 @@ int main(){
         printf("[1] - Processar novo arquivo de texto\n");
         printf("[2] - Salvar índice atual\n");
         printf("[3] - Ler um arquivo de índice\n");
-        printf("[4] - Mostrar as informações de um índice\n");
+        printf("[4] - Realizar buscas usando índice atual\n");
         printf("[5] - Sair\n");
         scanf("%d", &opcao);
 
