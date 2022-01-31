@@ -572,10 +572,14 @@ void BuscaSimples(char palavra[25], struct Indice *indice){
     }
 }
 
+void BuscaCompostaE(char palavra1[25], char palavra2[25], struct Indice *indice){}
+void BuscaCompostaOU(char palavra1[25], char palavra2[25], struct Indice *indice){}
+
 void menuRealizaBusca(struct Indice *indice){
 
     int opc = 0;
-    char palavra1[25];
+    char palavra1[25], palavra2[25];
+    int opc_aux = 0;
 
     printf("[1] - Busca simples\n");
     printf("[2] - Busca composta\n");
@@ -587,6 +591,25 @@ void menuRealizaBusca(struct Indice *indice){
             printf("Busca simples selecionada! Digite uma palavra:\n");
             scanf("%s", palavra1);
             BuscaSimples(palavra1, indice);
+            break;
+
+        case 2:
+            printf("Busca composta selecionada! Digite uma opção para busca composta:\n");
+            printf("[1] - Operador E\n");
+            printf("[2] - Operador OU\n");
+            scanf("%d", &opc_aux);
+            printf("Digite a primeira palavra:\n");
+            scanf("%s", palavra1);
+            printf("Digite a segunda palavra:\n");
+            scanf("%s", palavra2);
+
+            if(opc_aux == 1)
+                BuscaCompostaE(palavra1, palavra2, indice);
+            else if(opc_aux == 2)
+                BuscaCompostaOU(palavra1, palavra2, indice);
+            else
+                printf("Opção inválida.\n");
+
             break;
 
     }
