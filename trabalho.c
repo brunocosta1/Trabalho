@@ -328,8 +328,8 @@ struct Indice *processaArquivo(struct Indice *indice) {
         palavra = strtok(buffer, delimitadores);
 
         while (palavra != NULL) {
-            n = retornaIndice(palavra[0]);
-            printf("%d\n", n); 
+          n = retornaIndice(palavra[0]);
+          printf("%d\n", n);
           indice->iniciais[n] = InserePalavra(palavra, indice, num_linhas,
                                               indice->qtdArquivos, n);
 
@@ -361,35 +361,33 @@ void show(struct Indice *indice) {
 
   printf("\nPalavras:\n");
 
-  for(int i = 0; i < 26; i++){
+  for (int i = 0; i < 26; i++) {
 
-      struct Palavra *palavra = indice->iniciais[i];
+    struct Palavra *palavra = indice->iniciais[i];
 
-      if(palavra != NULL){
+    if (palavra != NULL) {
 
+      while (palavra != NULL) {
+        struct Ocorrencia *ocorrencia = palavra->ocorrencias;
 
-          while (palavra != NULL) {
-            struct Ocorrencia *ocorrencia = palavra->ocorrencias;
+        printf("\n%s\n", palavra->letras);
 
-            printf("\n%s\n", palavra->letras);
+        while (ocorrencia != NULL) {
+          printf("Numero do arquivo: %d | Quantidade de vezes que aparece no "
+                 "arquivo: %d | Linhas: ",
+                 ocorrencia->arquivo, ocorrencia->qtdOcorrencias);
+          for (int i = 0; i < ocorrencia->qtdOcorrencias; i++)
+            printf("[%d] ", ocorrencia->linhas[i]);
+          printf("\n");
 
-            while (ocorrencia != NULL) {
-              printf("Numero do arquivo: %d | Quantidade de vezes que aparece no "
-                     "arquivo: %d | Linhas: ",
-                     ocorrencia->arquivo, ocorrencia->qtdOcorrencias);
-              for (int i = 0; i < ocorrencia->qtdOcorrencias; i++)
-                printf("[%d] ", ocorrencia->linhas[i]);
-              printf("\n");
-
-              ocorrencia = ocorrencia->prox;
-            }
-            printf("\n");
-            palavra = palavra->prox;
-          }
+          ocorrencia = ocorrencia->prox;
+        }
+        printf("\n");
+        palavra = palavra->prox;
       }
+    }
   }
 }
-
 
 void salvarIndice(struct Indice *indice) {
   FILE *arq = fopen("indice.dat", "wb");
@@ -412,21 +410,21 @@ void salvarIndice(struct Indice *indice) {
       for (struct Palavra *aux1 = indice->iniciais[i]; aux1 != NULL;
            aux1 = aux1->prox) {
 
-          if(aux1 != NULL){
+        if (aux1 != NULL) {
 
-            int qtd = strlen(aux1->letras) + 1;
-            fwrite(&qtd, sizeof(int), 1, arq);
-            fwrite(aux1->letras, sizeof(char), qtd, arq);
-            fwrite(&aux1->qtdOcorrencias, sizeof(int), 1, arq);
+          int qtd = strlen(aux1->letras) + 1;
+          fwrite(&qtd, sizeof(int), 1, arq);
+          fwrite(aux1->letras, sizeof(char), qtd, arq);
+          fwrite(&aux1->qtdOcorrencias, sizeof(int), 1, arq);
 
-            for (struct Ocorrencia *tmp = aux1->ocorrencias; tmp != NULL;
-                 tmp = tmp->prox) {
+          for (struct Ocorrencia *tmp = aux1->ocorrencias; tmp != NULL;
+               tmp = tmp->prox) {
 
-              fwrite(&tmp->arquivo, sizeof(int), 1, arq);
-              fwrite(&tmp->qtdOcorrencias, sizeof(int), 1, arq);
-              fwrite(tmp->linhas, sizeof(int), tmp->qtdOcorrencias, arq);
-            }
+            fwrite(&tmp->arquivo, sizeof(int), 1, arq);
+            fwrite(&tmp->qtdOcorrencias, sizeof(int), 1, arq);
+            fwrite(tmp->linhas, sizeof(int), tmp->qtdOcorrencias, arq);
           }
+        }
       }
     }
     fclose(arq);
@@ -451,28 +449,28 @@ struct Indice *destroiIndice(struct Indice *indice) {
     for (int i = 0; i < 26; i++) {
       struct Palavra *aux1 = indice->iniciais[i];
 
-      if(aux1 != NULL){
-          while (aux1 != NULL) {
-            struct Palavra *aux4 = aux1->prox;
+      if (aux1 != NULL) {
+        while (aux1 != NULL) {
+          struct Palavra *aux4 = aux1->prox;
 
-            struct Ocorrencia *aux2 = aux1->ocorrencias;
+          struct Ocorrencia *aux2 = aux1->ocorrencias;
 
-            while (aux2 != NULL) {
-              struct Ocorrencia *aux3 = aux2->prox;
+          while (aux2 != NULL) {
+            struct Ocorrencia *aux3 = aux2->prox;
 
-              aux2->prox = NULL;
+            aux2->prox = NULL;
 
-              free(aux2->linhas);
-              free(aux2);
-              aux2 = aux3;
-            }
-
-            aux1->prox = NULL;
-            free(aux1);
-
-            aux1 = aux4;
+            free(aux2->linhas);
+            free(aux2);
+            aux2 = aux3;
           }
+
+          aux1->prox = NULL;
+          free(aux1);
+
+          aux1 = aux4;
         }
+      }
     }
     struct Arquivo *aux5 = indice->arquivos;
 
@@ -485,8 +483,8 @@ struct Indice *destroiIndice(struct Indice *indice) {
     }
   }
 
-  for(int i = 0; i < 26; i++)
-      indice->iniciais[i] = NULL;
+  for (int i = 0; i < 26; i++)
+    indice->iniciais[i] = NULL;
 
   indice->arquivos = NULL;
   indice->qtdArquivos = 0;
@@ -558,45 +556,44 @@ struct Indice *lerIndice(struct Indice *indice) {
   return indice;
 }
 
-char *retornaNomeArquivo(int idArquivo, struct Arquivo *l){
+char *retornaNomeArquivo(int idArquivo, struct Arquivo *l) {
 
-    struct Arquivo *aux = l;
-    for(int i = 1; i < idArquivo; i++)
-        aux = aux->prox;
-    return aux->nomeArquivo;
-    
+  struct Arquivo *aux = l;
+  for (int i = 1; i < idArquivo; i++)
+    aux = aux->prox;
+  return aux->nomeArquivo;
 }
 
-void BuscaSimples(char palavra[25], struct Indice *indice){
+void BuscaSimples(char palavra[25], struct Indice *indice) {
 
-    int n = retornaIndice(palavra[0]);
+  int n = retornaIndice(palavra[0]);
 
-    if(n != -1){
-        struct Palavra *l = indice->iniciais[n];
+  if (n != -1) {
+    struct Palavra *l = indice->iniciais[n];
 
-        if(!ExistePalavra(palavra, l)){
-            printf("Palavra não existe no índice\n");
-            printf("%s\n", l->letras);
-            printf("%d\n", n);
-        }
-        else{
-            struct Palavra *aux1 = BuscaPalavra(palavra, l);
-            struct Ocorrencia *aux2 = aux1->ocorrencias;
+    if (!ExistePalavra(palavra, l)) {
+      printf("Palavra não existe no índice\n");
+      printf("%s\n", l->letras);
+      printf("%d\n", n);
+    } else {
+      struct Palavra *aux1 = BuscaPalavra(palavra, l);
+      struct Ocorrencia *aux2 = aux1->ocorrencias;
 
-            while(aux2 != NULL){
-                printf("Arquivo: <%s>\n", retornaNomeArquivo(aux2->arquivo, indice->arquivos));
-                printf("Linhas: ");
-                for(int i = 0; i < aux2->qtdOcorrencias; i++)
-                    printf("[%d] ", aux2->linhas[i]);
-                printf("\n");
+      while (aux2 != NULL) {
+        printf("Arquivo: <%s>\n",
+               retornaNomeArquivo(aux2->arquivo, indice->arquivos));
+        printf("Linhas: ");
+        for (int i = 0; i < aux2->qtdOcorrencias; i++)
+          printf("[%d] ", aux2->linhas[i]);
+        printf("\n");
 
-                aux2 = aux2->prox;
-            }
-        }
-
-    }else{
-        printf("Entrada inválida.\n");
+        aux2 = aux2->prox;
+      }
     }
+
+  } else {
+    printf("Entrada inválida.\n");
+  }
 }
 
 int buscaTipoE(struct Palavra *palavra1, struct Palavra *palavra2, int *vet) {
@@ -617,140 +614,140 @@ int buscaTipoE(struct Palavra *palavra1, struct Palavra *palavra2, int *vet) {
   return tam;
 }
 
-void BuscaCompostaE(char palavra1[25], char palavra2[25], struct Indice *indice){
+void BuscaCompostaE(char palavra1[25], char palavra2[25],
+                    struct Indice *indice) {
 
-    int n1 = retornaIndice(palavra1[0]);
-    int n2 = retornaIndice(palavra2[0]);
+  int n1 = retornaIndice(palavra1[0]);
+  int n2 = retornaIndice(palavra2[0]);
 
-    if(n1 != -1 && n2 != -1){
-        struct Palavra *l1 = indice->iniciais[n1];
-        struct Palavra *l2 = indice->iniciais[n2];
+  if (n1 != -1 && n2 != -1) {
+    struct Palavra *l1 = indice->iniciais[n1];
+    struct Palavra *l2 = indice->iniciais[n2];
 
+    if (!ExistePalavra(palavra1, l1) && !ExistePalavra(palavra2, l2)) {
+      printf("Alguma das duas palavras não existe no índice\n");
+    } else {
+      struct Palavra *aux1 = BuscaPalavra(palavra1, l1);
+      struct Palavra *aux2 = BuscaPalavra(palavra2, l2);
 
-        if(!ExistePalavra(palavra1, l1) && !ExistePalavra(palavra2, l2)){
-            printf("Alguma das duas palavras não existe no índice\n");
-        }else{
-            struct Palavra *aux1 = BuscaPalavra(palavra1, l1);
-            struct Palavra *aux2 = BuscaPalavra(palavra2, l2);
+      int *idArquivos = malloc(sizeof(int));
+      int tam = buscaTipoE(aux1, aux2, idArquivos);
 
-            int *idArquivos = malloc(sizeof(int));
-            int tam = buscaTipoE(aux1, aux2, idArquivos);
-
-            printf("\nArquivos\n"); 
-            for(int i = 0; i < tam; i++){
-                printf("Arquivo %d: <%s>\n", i, retornaNomeArquivo(idArquivos[i], indice->arquivos));
-            }
-            printf("\n");
-            free(idArquivos);
-        }
-    }else{
-        printf("Entrada inválida.\n");
+      printf("\nArquivos\n");
+      for (int i = 0; i < tam; i++) {
+        printf("Arquivo %d: <%s>\n", i,
+               retornaNomeArquivo(idArquivos[i], indice->arquivos));
+      }
+      printf("\n");
+      free(idArquivos);
     }
+  } else {
+    printf("Entrada inválida.\n");
+  }
 }
 
-int verificaExistenciaIdArquivo(int *vet, int tam, int idArquivo){
+int verificaExistenciaIdArquivo(int *vet, int tam, int idArquivo) {
 
-    for(int i = 0; i < tam; i++)
-        if(vet[i] == idArquivo)
-            return 1;
+  for (int i = 0; i < tam; i++)
+    if (vet[i] == idArquivo)
+      return 1;
 
-    return 0;
-
+  return 0;
 }
 
-int buscaTipoOU(struct Palavra *palavra1, struct Palavra *palavra2, int *vet){
-    int tam = 0;
+int buscaTipoOU(struct Palavra *palavra1, struct Palavra *palavra2, int *vet) {
+  int tam = 0;
 
+  for (struct Ocorrencia *aux1 = palavra1->ocorrencias; aux1 != NULL;
+       aux1 = aux1->prox) {
+    tam++;
+    vet = realloc(vet, sizeof(int) * tam);
+    vet[tam - 1] = aux1->arquivo;
+  }
 
-    for(struct Ocorrencia *aux1 = palavra1->ocorrencias; aux1 != NULL; aux1 = aux1->prox){
-        tam++;
-        vet = realloc(vet, sizeof(int) * tam);
-        vet[tam - 1] = aux1->arquivo;
+  for (struct Ocorrencia *aux2 = palavra2->ocorrencias; aux2 != NULL;
+       aux2 = aux2->prox) {
+    if (!verificaExistenciaIdArquivo(vet, tam, aux2->arquivo)) {
+      tam++;
+      vet = realloc(vet, sizeof(int) * tam);
+      vet[tam - 1] = aux2->arquivo;
     }
+  }
 
-    for(struct Ocorrencia *aux2 = palavra2->ocorrencias; aux2 != NULL; aux2 = aux2->prox){
-        if(!verificaExistenciaIdArquivo(vet, tam, aux2->arquivo)){
-            tam++;
-            vet = realloc(vet, sizeof(int) * tam);
-            vet[tam - 1] = aux2->arquivo;
-        }
-    }
-
-
-    return tam;
+  return tam;
 }
 
-void BuscaCompostaOU(char palavra1[25], char palavra2[25], struct Indice *indice){
+void BuscaCompostaOU(char palavra1[25], char palavra2[25],
+                     struct Indice *indice) {
 
-    int n1 = retornaIndice(palavra1[0]);
-    int n2 = retornaIndice(palavra2[0]);
+  int n1 = retornaIndice(palavra1[0]);
+  int n2 = retornaIndice(palavra2[0]);
 
-    if(n1 != -1 && n2 != -1){
-        struct Palavra *l1 = indice->iniciais[n1];
-        struct Palavra *l2 = indice->iniciais[n2];
+  if (n1 != -1 && n2 != -1) {
+    struct Palavra *l1 = indice->iniciais[n1];
+    struct Palavra *l2 = indice->iniciais[n2];
 
-        if(!ExistePalavra(palavra1, l1) && !ExistePalavra(palavra2, l2)){
-                printf("Alguma das duas palavras não existe no índice\n");
-        }else{
+    if (!ExistePalavra(palavra1, l1) && !ExistePalavra(palavra2, l2)) {
+      printf("Alguma das duas palavras não existe no índice\n");
+    } else {
 
-            struct Palavra *aux1 = BuscaPalavra(palavra1, l1);
-            struct Palavra *aux2 = BuscaPalavra(palavra2, l2);
+      struct Palavra *aux1 = BuscaPalavra(palavra1, l1);
+      struct Palavra *aux2 = BuscaPalavra(palavra2, l2);
 
-            int *idArquivos = malloc(sizeof(int));
-            int tam = buscaTipoOU(aux1, aux2, idArquivos);
+      int *idArquivos = malloc(sizeof(int));
+      int tam = buscaTipoOU(aux1, aux2, idArquivos);
 
-            printf("\nArquivos:\n\n");
-            for(int i = 0; i < tam; i++){
-                printf("Arquivo %d: <%s>\n", i, retornaNomeArquivo(idArquivos[i], indice->arquivos));
-            }
-            printf("\n");
-            free(idArquivos);
-        }
-    }else{
-        printf("Entrada inválida.\n");
+      printf("\nArquivos:\n\n");
+      for (int i = 0; i < tam; i++) {
+        printf("Arquivo %d: <%s>\n", i,
+               retornaNomeArquivo(idArquivos[i], indice->arquivos));
+      }
+      printf("\n");
+      free(idArquivos);
     }
-
+  } else {
+    printf("Entrada inválida.\n");
+  }
 }
 
-void menuRealizaBusca(struct Indice *indice){
+void menuRealizaBusca(struct Indice *indice) {
 
-    int opc = 0;
-    char palavra1[25], palavra2[25];
-    int opc_aux = 0;
+  int opc = 0;
+  char palavra1[25], palavra2[25];
+  int opc_aux = 0;
 
-    printf("[1] - Busca simples\n");
-    printf("[2] - Busca composta\n");
-    scanf("%d", &opc);
+  printf("[1] - Busca simples\n");
+  printf("[2] - Busca composta\n");
+  scanf("%d", &opc);
 
-    switch(opc){
+  switch (opc) {
 
-        case 1:
-            printf("Busca simples selecionada! Digite uma palavra:\n");
-            scanf("%s", palavra1);
-            BuscaSimples(palavra1, indice);
-            break;
+  case 1:
+    printf("Busca simples selecionada! Digite uma palavra:\n");
+    scanf("%s", palavra1);
+    BuscaSimples(palavra1, indice);
+    break;
 
-        case 2:
-            printf("Busca composta selecionada! Digite uma opção para busca composta:\n");
-            printf("[1] - Operador E\n");
-            printf("[2] - Operador OU\n");
-            scanf("%d", &opc_aux);
-            printf("Digite a primeira palavra:\n");
-            scanf("%s", palavra1);
-            printf("Digite a segunda palavra:\n");
-            scanf("%s", palavra2);
+  case 2:
+    printf(
+        "Busca composta selecionada! Digite uma opção para busca composta:\n");
+    printf("[1] - Operador E\n");
+    printf("[2] - Operador OU\n");
+    scanf("%d", &opc_aux);
+    printf("Digite a primeira palavra:\n");
+    scanf("%s", palavra1);
+    printf("Digite a segunda palavra:\n");
+    scanf("%s", palavra2);
 
-            if(opc_aux == 1)
-                BuscaCompostaE(palavra1, palavra2, indice);
-            else if(opc_aux == 2)
-                BuscaCompostaOU(palavra1, palavra2, indice);
-            else
-                printf("Opção inválida.\n");
+    if (opc_aux == 1)
+      BuscaCompostaE(palavra1, palavra2, indice);
+    else if (opc_aux == 2)
+      BuscaCompostaOU(palavra1, palavra2, indice);
+    else
+      printf("Opção inválida.\n");
 
-            break;
-
-    }
-
+    break;
+  }
 }
 
 int main() {
