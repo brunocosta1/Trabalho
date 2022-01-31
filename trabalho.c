@@ -599,21 +599,22 @@ void BuscaSimples(char palavra[25], struct Indice *indice){
     }
 }
 
-int buscaArquivos(struct Palavra *palavra1, struct Palavra *palavra2, int *vet){
+int buscaTipoE(struct Palavra *palavra1, struct Palavra *palavra2, int *vet) {
 
-    int tam = 0; 
-    for(struct Ocorrencia *aux1 = palavra1->ocorrencias; aux1 != NULL; aux1 = aux1->prox){
-        for(struct Ocorrencia *aux2 = palavra2->ocorrencias; aux2 != NULL; aux2 = aux2->prox){
-            if(aux1->arquivo == aux2->arquivo){
-                tam++;
-                vet = realloc(vet, sizeof(int) * tam);
-                vet[tam-1] = aux1->arquivo;
-            }
-        }
+  int tam = 0;
+  for (struct Ocorrencia *aux1 = palavra1->ocorrencias; aux1 != NULL;
+       aux1 = aux1->prox) {
+    for (struct Ocorrencia *aux2 = palavra2->ocorrencias; aux2 != NULL;
+         aux2 = aux2->prox) {
+      if (aux1->arquivo == aux2->arquivo) {
+        tam++;
+        vet = realloc(vet, sizeof(int) * tam);
+        vet[tam - 1] = aux1->arquivo;
+      }
     }
+  }
 
-    return tam;
-
+  return tam;
 }
 
 void BuscaCompostaE(char palavra1[25], char palavra2[25], struct Indice *indice){
@@ -633,18 +634,83 @@ void BuscaCompostaE(char palavra1[25], char palavra2[25], struct Indice *indice)
             struct Palavra *aux2 = BuscaPalavra(palavra2, l2);
 
             int *idArquivos = malloc(sizeof(int));
-            int tam = buscaArquivos(aux1, aux2, idArquivos);
+            int tam = buscaTipoE(aux1, aux2, idArquivos);
 
-            printf("Arquivos que contém as duas palavras simultaneamente:\n");
+            printf("\nArquivos\n"); 
             for(int i = 0; i < tam; i++){
-                printf("Arquivo: <%s>\n", retornaNomeArquivo(idArquivos[i], indice->arquivos));
+                printf("Arquivo %d: <%s>\n", i, retornaNomeArquivo(idArquivos[i], indice->arquivos));
             }
+            printf("\n");
+            free(idArquivos);
         }
     }else{
         printf("Entrada inválida.\n");
     }
 }
-void BuscaCompostaOU(char palavra1[25], char palavra2[25], struct Indice *indice){}
+
+int verificaExistenciaIdArquivo(int *vet, int tam, int idArquivo){
+
+    for(int i = 0; i < tam; i++)
+        if(vet[i] == idArquivo)
+            return 1;
+
+    return 0;
+
+}
+
+int buscaTipoOU(struct Palavra *palavra1, struct Palavra *palavra2, int *vet){
+    int tam = 0;
+
+
+    for(struct Ocorrencia *aux1 = palavra1->ocorrencias; aux1 != NULL; aux1 = aux1->prox){
+        tam++;
+        vet = realloc(vet, sizeof(int) * tam);
+        vet[tam - 1] = aux1->arquivo;
+    }
+
+    for(struct Ocorrencia *aux2 = palavra2->ocorrencias; aux2 != NULL; aux2 = aux2->prox){
+        if(!verificaExistenciaIdArquivo(vet, tam, aux2->arquivo)){
+            tam++;
+            vet = realloc(vet, sizeof(int) * tam);
+            vet[tam - 1] = aux2->arquivo;
+        }
+    }
+
+
+    return tam;
+}
+
+void BuscaCompostaOU(char palavra1[25], char palavra2[25], struct Indice *indice){
+
+    int n1 = retornaIndice(palavra1[0]);
+    int n2 = retornaIndice(palavra2[0]);
+
+    if(n1 != -1 && n2 != -1){
+        struct Palavra *l1 = indice->iniciais[n1];
+        struct Palavra *l2 = indice->iniciais[n2];
+
+        if(!ExistePalavra(palavra1, l1) && !ExistePalavra(palavra2, l2)){
+                printf("Alguma das duas palavras não existe no índice\n");
+        }else{
+
+            struct Palavra *aux1 = BuscaPalavra(palavra1, l1);
+            struct Palavra *aux2 = BuscaPalavra(palavra2, l2);
+
+            int *idArquivos = malloc(sizeof(int));
+            int tam = buscaTipoOU(aux1, aux2, idArquivos);
+
+            printf("\nArquivos:\n\n");
+            for(int i = 0; i < tam; i++){
+                printf("Arquivo %d: <%s>\n", i, retornaNomeArquivo(idArquivos[i], indice->arquivos));
+            }
+            printf("\n");
+            free(idArquivos);
+        }
+    }else{
+        printf("Entrada inválida.\n");
+    }
+
+}
 
 void menuRealizaBusca(struct Indice *indice){
 
