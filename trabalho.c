@@ -531,6 +531,68 @@ struct Indice *lerIndice(struct Indice *indice) {
   return indice;
 }
 
+char *retornaNomeArquivo(int idArquivo, struct Arquivo *l){
+
+    struct Arquivo *aux = l;
+    
+    for(int i = 0; i < idArquivo; i++){
+        if(aux->prox != NULL)
+            aux = aux->prox;
+    }
+    return aux->nomeArquivo;
+}
+
+void BuscaSimples(char palavra[25], struct Indice *indice){
+
+    int n = retornaIndice(palavra[0]);
+
+    if(n != -1){
+        struct Palavra *l = indice->iniciais[n];
+
+        if(!ExistePalavra(palavra, l)){
+            printf("Palavra não existe no índice\n");
+        }
+        else{
+            struct Palavra *aux1 = BuscaPalavra(palavra, l);
+            struct Ocorrencia *aux2 = aux1->ocorrencias;
+
+            while(aux2 != NULL){
+                printf("Arquivo:<%s>\n", retornaNomeArquivo(aux2->arquivo, indice->arquivos));
+                printf("Linhas: ");
+                for(int i = 0; i < aux2->qtdOcorrencias; i++)
+                    printf("[%d] ", aux2->linhas[i]);
+                printf("\n");
+
+                aux2 = aux2->prox;
+            }
+        }
+
+    }else{
+        printf("Entrada inválida.\n");
+    }
+}
+
+void menuRealizaBusca(struct Indice *indice){
+
+    int opc = 0;
+    char palavra1[25];
+
+    printf("[1] - Busca simples\n");
+    printf("[2] - Busca composta\n");
+    scanf("%d", &opc);
+
+    switch(opc){
+
+        case 1:
+            printf("Busca simples selecionada! Digite uma palavra:\n");
+            scanf("%s", palavra1);
+            BuscaSimples(palavra1, indice);
+            break;
+
+    }
+
+}
+
 int main() {
 
   int opcao = 0;
@@ -567,7 +629,8 @@ int main() {
       break;
 
     case 4:
-      show(indice);
+      /*show(indice);*/
+      menuRealizaBusca(indice);
       break;
 
     case 5:
