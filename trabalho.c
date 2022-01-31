@@ -329,7 +329,6 @@ struct Indice *processaArquivo(struct Indice *indice) {
 
         while (palavra != NULL) {
           n = retornaIndice(palavra[0]);
-          printf("%d\n", n);
           indice->iniciais[n] = InserePalavra(palavra, indice, num_linhas,
                                               indice->qtdArquivos, n);
 
@@ -786,7 +785,6 @@ int main() {
       break;
 
     case 4:
-      show(indice);
       menuRealizaBusca(indice);
       break;
 
