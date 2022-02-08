@@ -623,7 +623,7 @@ void BuscaCompostaE(char palavra1[25], char palavra2[25],
     struct Palavra *l1 = indice->iniciais[n1];
     struct Palavra *l2 = indice->iniciais[n2];
 
-    if (!ExistePalavra(palavra1, l1) && !ExistePalavra(palavra2, l2)) {
+    if (!ExistePalavra(palavra1, l1) || !ExistePalavra(palavra2, l2)) {
       printf("Alguma das duas palavras não existe no índice\n");
     } else {
       struct Palavra *aux1 = BuscaPalavra(palavra1, l1);
@@ -638,6 +638,7 @@ void BuscaCompostaE(char palavra1[25], char palavra2[25],
                retornaNomeArquivo(idArquivos[i], indice->arquivos));
       }
       printf("\n");
+
       free(idArquivos);
     }
   } else {
@@ -686,12 +687,13 @@ void BuscaCompostaOU(char palavra1[25], char palavra2[25],
     struct Palavra *l1 = indice->iniciais[n1];
     struct Palavra *l2 = indice->iniciais[n2];
 
-    if (!ExistePalavra(palavra1, l1) && !ExistePalavra(palavra2, l2)) {
+    if (!ExistePalavra(palavra1, l1) || !ExistePalavra(palavra2, l2)) {
       printf("Alguma das duas palavras não existe no índice\n");
     } else {
 
       struct Palavra *aux1 = BuscaPalavra(palavra1, l1);
       struct Palavra *aux2 = BuscaPalavra(palavra2, l2);
+
 
       int *idArquivos = malloc(sizeof(int));
       int tam = buscaTipoOU(aux1, aux2, idArquivos);
